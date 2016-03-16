@@ -4,7 +4,7 @@
   "description": "Generate a set of Ractive keypaths/values for all the changes between two immutable objects",
   "main": "index.js",
   "scripts": {
-    "test": "tape test.js"
+    "test": "tape test.js && jsmd readme.md"
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,9 @@
   "bugs": {
     "url": "https://github.com/TehShrike/ractive-diff-generator/issues"
   },
-  "homepage": "https://github.com/TehShrike/ractive-diff-generator#readme"
+  "homepage": "https://github.com/TehShrike/ractive-diff-generator#readme",
+  "devDependencies": {
+    "jsmd": "0.3.1",
+    "tape": "4.5.1"
+  }
 }
