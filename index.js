@@ -1,5 +1,8 @@
 module.exports = function diff(oldObject, newObject) {
-	var keypathValues = {}
+	var keypathValues = {
+		set: {},
+		merge: []
+	}
 	diffToKeypathValues(keypathValues, '', oldObject, newObject)
 	return keypathValues
 }
@@ -14,7 +17,7 @@ function diffToKeypathValues(keypathValues, valueKeypath, oldObject, newObject) 
 		var currentKeypath = keypath(key)
 
 		function set(value) {
-			keypathValues[currentKeypath] = value
+			keypathValues.set[currentKeypath] = value
 		}
 
 		if (typeof newValue === 'undefined') {
@@ -25,8 +28,11 @@ function diffToKeypathValues(keypathValues, valueKeypath, oldObject, newObject) 
 			set(newValue)
 		} else if (type(newValue) === 'other' && newValue !== oldValue) {
 			set(newValue)
-		} else if (Array.isArray(newValue) && newValue.length < oldValue.length) {
-			set(newValue)
+		} else if (Array.isArray(newValue) && newValue !== oldValue) {
+			keypathValues.merge.push({
+				keypath: currentKeypath,
+				array: newValue
+			})
 		} else if (objectOrArray(newValue) && newValue !== oldValue) {
 			diffToKeypathValues(keypathValues, currentKeypath, oldValue, newValue)
 		}
