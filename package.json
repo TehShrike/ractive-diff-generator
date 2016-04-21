@@ -1,6 +1,6 @@
 {
   "name": "ractive-diff-generator",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Generate a set of Ractive keypaths/values for all the changes between two immutable objects",
   "main": "index.js",
   "scripts": {
