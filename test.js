@@ -2,6 +2,8 @@
 
 var test = require('tape-catch')
 var diff = require('./')
+var Ractive = require('ractive')
+Ractive.DEBUG = false
 
 test('value on old not on new + value on new not on old', t => {
 	var b = {}
@@ -19,7 +21,7 @@ test('value on old not on new + value on new not on old', t => {
 	t.end()
 })
 
-test('new object of different type', t => {
+test('new object of different type should be copied', t => {
 	var b = {}
 	var output = diff(Object.freeze({
 		a: 3,
@@ -29,7 +31,7 @@ test('new object of different type', t => {
 	})
 
 	t.equal(output.set.a, null)
-	t.equal(output.set.b, b)
+	t.notEqual(output.set.b, b)
 	t.equal(Object.keys(output.set).length, 2)
 	t.end()
 })
@@ -133,5 +135,70 @@ test('removed values in an array', t => {
 	})
 	t.equal(output.merge.length, 1)
 	t.equal(Object.keys(output.set).length, 0)
+	t.end()
+})
+
+test('Inputs are not modified', t => {
+	var ary = [1, 2]
+	var objectWithArray = {
+		ary: ary
+	}
+	var originalObject = {
+		someObject: objectWithArray
+	}
+
+	var ractive = new Ractive()
+
+	var firstChange = diff({}, originalObject)
+	diff.apply(ractive, firstChange)
+
+	t.notOk(ractive.get('someObject.ary') === ary)
+	t.deepEqual(ractive.get('someObject.ary'), ary)
+
+	var secondChange = diff(ractive.get(), {
+		someObject: {
+			ary: [1, 2, 3]
+		}
+	})
+
+	diff.apply(ractive, secondChange)
+
+	t.deepEqual(ary, [1, 2], 'The original array still only has two elements')
+	t.ok(originalObject.someObject === objectWithArray, 'The original object still has the same property')
+	t.ok(objectWithArray.ary === ary, 'The nested object is still pointing to the original array')
+
+	t.end()
+})
+
+test('Complex array elements are not altered', t => {
+	var first = {
+		a: 'yes, a'
+	}
+	var nested = {
+		nested: 'totally'
+	}
+	var second = {
+		b: nested
+	}
+	var ary = [first, second]
+	var originalObject = {
+		ary: ary
+	}
+
+	var ractive = new Ractive()
+
+	var firstChange = diff({}, originalObject)
+	diff.apply(ractive, firstChange)
+
+	var secondChange = diff(originalObject, {
+		ary: [first, { b: { nested: 'different' } }]
+	})
+
+	diff.apply(ractive, secondChange)
+
+	t.equal(ary[1].b.nested, 'totally')
+	t.equal(nested.nested, 'totally')
+	t.equal(ractive.get('ary.1.b.nested'), 'different')
+
 	t.end()
 })

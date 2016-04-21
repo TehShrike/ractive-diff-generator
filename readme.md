@@ -85,11 +85,7 @@ var mergeOptions = {
 	}
 }
 
-ractive.set(someDiff.set)
-someDiff.merge.forEach(function(arrayToMerge) {
-	ractive.merge(arrayToMerge.keypath, arrayToMerge.array, mergeOptions)
-})
-
+diff.apply(ractive, someDiff)
 
 ```
 
@@ -99,15 +95,12 @@ someDiff.merge.forEach(function(arrayToMerge) {
 
 Given two objects, `oldState` and `newState`, take the set of their properties, and for each one:
 
-1. if the property exists in `oldState` but not `newState`, set its keypath value to `null`.
-2. else if the property exists in `newState` but not `oldState`, set its keypath value to the property's value on `newState`
-3. else if the property exists on both objects
-	1. if the values are not the same type, set the keypath value to the value from `newState`
-	2. else if the values are primitives/other and they are not identical, set the keypath value to the value from `newState`
-	3. else if the values are arrays and they are not identical, add the `newState` to the `merge` array with the current keypath
-	4. else if both values are non-primitive and they are identical, note the keypath and recursively perform the algorithm on the objects
-
-Otherwise ignore the property and move on.
+1. if their values are the same, ignore the property and move on
+2. if the property does not exist in `newState`, set its keypath value to `null`.
+3. if the new value is not a string or an array, just set the keypath value to it
+4. if the two values have different types, make a deep copy of the new value and use that as the new value for that keypath
+5. if the two values are arrays, add the new array value to the `merge` list
+6. if the two values are objects, note the keypath and recursively perform the algorithm on the objects
 
 # License
 

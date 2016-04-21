@@ -20,20 +20,23 @@ function diffToKeypathValues(keypathValues, valueKeypath, oldObject, newObject) 
 			keypathValues.set[currentKeypath] = value
 		}
 
-		if (typeof newValue === 'undefined') {
+		var newType = type(newValue)
+		var oldType = type(oldValue)
+
+		if (newValue === oldValue) {
+			return
+		} else if (newType === 'undefined') {
 			set(null)
-		} else if (typeof oldValue === 'undefined') {
+		} else if (newType === 'other') {
 			set(newValue)
-		} else if (type(oldValue) !== type(newValue)) {
-			set(newValue)
-		} else if (type(newValue) === 'other' && newValue !== oldValue) {
-			set(newValue)
-		} else if (Array.isArray(newValue) && newValue !== oldValue) {
+		} else if (oldType !== newType) {
+			set(copy(newValue))
+		} else if (newType === 'array') {
 			keypathValues.merge.push({
 				keypath: currentKeypath,
 				array: newValue
 			})
-		} else if (objectOrArray(newValue) && newValue !== oldValue) {
+		} else if (type(newValue) === 'object') {
 			diffToKeypathValues(keypathValues, currentKeypath, oldValue, newValue)
 		}
 	})
@@ -48,8 +51,17 @@ function iterateOverAllProperties(oldObject, newObject, cb) {
 	Object.keys(newObject).filter(key => !seenAlready[key]).forEach(key => cb(key))
 }
 
-function objectOrArray(o) {
-	return object(o) || Array.isArray(o)
+function copy(value) {
+	var t = type(value)
+	if (t === 'array') {
+		return value.map(copy)
+	} else if (t === 'object') {
+		var target = {}
+		Object.keys(value).forEach(key => target[key] = copy(value[key]))
+		return target
+	} else {
+		return value
+	}
 }
 
 function object(o) {
@@ -57,11 +69,26 @@ function object(o) {
 }
 
 function type(o) {
-	if (Array.isArray(o)) {
+	if (typeof o === 'undefined') {
+		return 'undefined'
+	} else if (Array.isArray(o)) {
 		return 'array'
 	} else if (object(o)) {
 		return 'object'
 	} else {
 		return 'other'
 	}
+}
+
+var mergeOptions = {
+	compare: function identity(o) {
+		return o
+	}
+}
+
+module.exports.apply = function(ractive, diff) {
+	ractive.set(diff.set)
+	diff.merge.forEach(function(arrayToMerge) {
+		ractive.merge(arrayToMerge.keypath, arrayToMerge.array, mergeOptions)
+	})
 }
