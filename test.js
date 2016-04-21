@@ -1,12 +1,14 @@
-var test = require('tape')
+'use strict'
+
+var test = require('tape-catch')
 var diff = require('./')
 
 test('value on old not on new + value on new not on old', t => {
 	var b = {}
-	var output = diff({
+	var output = diff(Object.freeze({
 		a: 3,
 		b: b
-	}, {
+	}), {
 		c: 'something else'
 	})
 
@@ -19,10 +21,10 @@ test('value on old not on new + value on new not on old', t => {
 
 test('new object of different type', t => {
 	var b = {}
-	var output = diff({
+	var output = diff(Object.freeze({
 		a: 3,
 		b: 'buh'
-	}, {
+	}), {
 		b: b
 	})
 
@@ -33,9 +35,9 @@ test('new object of different type', t => {
 })
 
 test('new primitive of different type', t => {
-	var output = diff({
+	var output = diff(Object.freeze({
 		a: 3
-	}, {
+	}), {
 		a: 'three'
 	})
 
@@ -45,9 +47,9 @@ test('new primitive of different type', t => {
 })
 
 test('new primitive of same type', t => {
-	var output = diff({
+	var output = diff(Object.freeze({
 		a: 3
-	}, {
+	}), {
 		a: 4
 	})
 
@@ -57,9 +59,9 @@ test('new primitive of same type', t => {
 })
 
 test('new primitive of same value', t => {
-	var output = diff({
+	var output = diff(Object.freeze({
 		a: 3
-	}, {
+	}), {
 		a: 3
 	})
 
@@ -69,14 +71,14 @@ test('new primitive of same value', t => {
 })
 
 test('nested object with different value', t => {
-	var first = {}
+	var first = Object.freeze({})
 
-	var output = diff({
+	var output = diff(Object.freeze({
 		a: {
 			first: first,
-			second: {}
+			second: Object.freeze({})
 		}
-	}, {
+	}), {
 		a: {
 			first: first,
 			second: {
@@ -93,9 +95,9 @@ test('nested object with different value', t => {
 
 test('new values in an array', t => {
 	var a = {}
-	var output = diff({
-		ary: [1, 2, a]
-	}, {
+	var output = diff(Object.freeze({
+		ary: Object.freeze([1, 2, a])
+	}), {
 		ary: [1, 3, a, { newObject: true }]
 	})
 
@@ -109,15 +111,15 @@ test('new values in an array', t => {
 })
 
 test('removed values in an array', t => {
-	var a = {}
-	var b = [ { eh: 'lol' } ]
-	var output = diff({
+	var a = Object.freeze({})
+	var b = Object.freeze([ { eh: 'lol' } ])
+	var output = diff(Object.freeze({
 		whatever: 'eh',
 		deeper: {
-			ary: [1, 2, a, 'eh'],
+			ary: Object.freeze([1, 2, a, 'eh']),
 			ary2: b
 		}
-	}, {
+	}), {
 		whatever: 'eh',
 		deeper: {
 			ary: [1, 3, a],
