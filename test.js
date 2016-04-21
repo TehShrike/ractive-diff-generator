@@ -138,7 +138,7 @@ test('removed values in an array', t => {
 	t.end()
 })
 
-test('Inputs are not modified', t => {
+test('Inputs arrays are not modified', t => {
 	var ary = [1, 2]
 	var objectWithArray = {
 		ary: ary
@@ -200,5 +200,37 @@ test('Complex array elements are not altered', t => {
 	t.equal(nested.nested, 'totally')
 	t.equal(ractive.get('ary.1.b.nested'), 'different')
 
+	t.end()
+})
+
+test('Input objects are not changed', t => {
+	var grandchild = {
+		number: 1
+	}
+	var child = {
+		grandchild: grandchild
+	}
+	var main = {
+		child: child
+	}
+
+	var ractive = new Ractive()
+
+	var firstChange = diff({}, main)
+	diff.apply(ractive, firstChange)
+
+	var secondChange = diff(main, {
+		child: {
+			grandchild: {
+				number: 2
+			}
+		}
+	})
+
+	diff.apply(ractive, secondChange)
+
+	t.equal(main.child, child)
+	t.equal(child.grandchild, grandchild)
+	t.equal(grandchild.number, 1)
 	t.end()
 })
