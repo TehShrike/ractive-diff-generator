@@ -11,7 +11,7 @@ function diffToKeypathValues(keypathValues, valueKeypath, oldObject, newObject) 
 	function keypath(key) {
 		return (valueKeypath ? (valueKeypath + '.') : '') + key
 	}
-	iterateOverAllProperties(oldObject, newObject, key => {
+	iterateOverAllProperties(oldObject, newObject, function(key) {
 		var oldValue = oldObject[key]
 		var newValue = newObject[key]
 		var currentKeypath = keypath(key)
@@ -44,11 +44,15 @@ function diffToKeypathValues(keypathValues, valueKeypath, oldObject, newObject) 
 
 function iterateOverAllProperties(oldObject, newObject, cb) {
 	var seenAlready = {}
-	Object.keys(oldObject).forEach(key => {
+	Object.keys(oldObject).forEach(function(key) {
 		seenAlready[key] = true
 		cb(key)
 	})
-	Object.keys(newObject).filter(key => !seenAlready[key]).forEach(key => cb(key))
+	Object.keys(newObject).filter(function(key) {
+		return !seenAlready[key]
+	}).forEach(function(key) {
+		cb(key)
+	})
 }
 
 function copy(value) {
@@ -57,7 +61,9 @@ function copy(value) {
 		return value.map(copy)
 	} else if (t === 'object') {
 		var target = {}
-		Object.keys(value).forEach(key => target[key] = copy(value[key]))
+		Object.keys(value).forEach(function(key) {
+			target[key] = copy(value[key])
+		})
 		return target
 	} else {
 		return value
