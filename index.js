@@ -95,6 +95,11 @@ var mergeOptions = {
 module.exports.apply = function(ractive, diff) {
 	ractive.set(diff.set)
 	diff.merge.forEach(function(arrayToMerge) {
-		ractive.merge(arrayToMerge.keypath, arrayToMerge.array, mergeOptions)
+		if(ractive.merge) {
+			ractive.merge(arrayToMerge.keypath, arrayToMerge.array, mergeOptions)
+		}
+		else {
+			ractive.set(arrayToMerge.keypath, arrayToMerge.array, Object.assign({}, mergeOptions, { deep: true }))
+		}
 	})
 }
