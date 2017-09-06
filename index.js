@@ -1,7 +1,7 @@
 module.exports = function diff(oldObject, newObject) {
 	var keypathValues = {
 		set: {},
-		merge: []
+		merge: [],
 	}
 	diffToKeypathValues(keypathValues, '', oldObject, newObject)
 	return keypathValues
@@ -34,7 +34,7 @@ function diffToKeypathValues(keypathValues, valueKeypath, oldObject, newObject) 
 		} else if (newType === 'array') {
 			keypathValues.merge.push({
 				keypath: currentKeypath,
-				array: newValue
+				array: newValue,
 			})
 		} else if (type(newValue) === 'object') {
 			diffToKeypathValues(keypathValues, currentKeypath, oldValue, newValue)
@@ -89,16 +89,15 @@ function type(o) {
 var mergeOptions = {
 	compare: function identity(o) {
 		return o
-	}
+	},
 }
 
 module.exports.apply = function(ractive, diff) {
 	ractive.set(diff.set)
 	diff.merge.forEach(function(arrayToMerge) {
-		if(ractive.merge) {
+		if (ractive.merge) {
 			ractive.merge(arrayToMerge.keypath, arrayToMerge.array, mergeOptions)
-		}
-		else {
+		} else {
 			ractive.set(arrayToMerge.keypath, arrayToMerge.array, Object.assign({}, mergeOptions, { deep: true }))
 		}
 	})
